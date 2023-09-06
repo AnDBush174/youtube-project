@@ -5,14 +5,22 @@ if __name__ == '__main__':
     moscowpython = Channel('UC-OVMPlMA3-YCIeg4z5z23A')
     highload = Channel('UCwHL6WHUarjGfUM_586me8w')
 
-    # Используем различные магические методы
-    print(moscowpython)  # 'MoscowPython (https://www.youtube.com/channel/UC-OVMPlMA3-YCIeg4z5z23A)'
-    print(moscowpython + highload)  # 100100
-    print(moscowpython - highload)  # -48300
-    print(highload - moscowpython)  # 48300
-    print(moscowpython > highload)  # False
-    print(moscowpython >= highload)  # False
-    print(moscowpython < highload)  # True
-    print(moscowpython <= highload)  # True
-    print(moscowpython == highload)  # False
+    print(moscowpython)
+    print(highload)
+    print("Количество подписчиков на канале MoscowPython:", moscowpython.subscribers)
+    print("Количество подписчиков на канале HighLoad Channel:", highload.subscribers)
+
+    sum_total = moscowpython + highload
+    difference = highload - moscowpython
+
+    print("Сумма подписчиков двух объектов:", sum_total)
+    print("Разница подписчиков двух объектов:", difference)
+    print("moscowpython > highload:", moscowpython > highload)
+    print("moscowpython >= highload:", moscowpython >= highload)
+    print("moscowpython < highload:", moscowpython < highload)
+    print("moscowpython <= highload:", moscowpython <= highload)
+    print("moscowpython == highload:", moscowpython == highload)
+
+
+
     

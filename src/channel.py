@@ -1,75 +1,76 @@
-import json
 import os
-from googleapiclient.discovery import build
-
-from helper.youtube_api_manual import channel_id
+import requests
 
 
 class Channel:
-    """Класс для YouTube-канала"""
+    def __init__(self, url):
+        self.url = url
+        self.subscribers = self.get_subscribers()  # Получение количества подписчиков при создании объекта
 
-    def __init__(self, channel_id: str) -> None:
-        """Инициализирует экземпляр класса с указанным ID канала"""
-        self.channel_id = channel_id
-        self.title = ""
-        self.description = ""
-        self.url = ""
-        self.subscriber_count = 0
-        self.video_count = 0
-        self.view_count = 0
-        self.update_channel_info()
+    def get_subscribers(self):
+        api_key = os.environ.get('YT_API_KEY')
+        response = requests.get(
+            f'https://www.googleapis.com/youtube/v3/channels?part=statistics&id={self.url}&key={api_key}')  # Получение информации о канале
+        data = response.json()
+        if 'items' in data:
+            subscribers = int(
+                data['items'][0]['statistics']['subscriberCount'])  # Извлечение количества подписчиков из данных
+            return subscribers
+        return 0
 
-    def update_channel_info(self) -> None:
-        """Обновляет информацию о канале"""
-        service = self.get_service()
-        request = service.channels().list(part="snippet,statistics", id=self.channel_id)
-        response = request.execute()
-        channel = response["items"][0]
-        snippet = channel["snippet"]
-        statistics = channel["statistics"]
-        self.title = snippet["title"]
-        self.description = snippet["description"]
-        self.url = f"https://www.youtube.com/channel/{self.channel_id}"
-        self.subscriber_count = int(statistics["subscriberCount"])
-        self.video_count = int(statistics["videoCount"])
-        self.view_count = int(statistics["viewCount"])
+    def __str__(self):
+        api_key = os.environ.get('YT_API_KEY')
+        response = requests.get(
+            f'https://www.googleapis.com/youtube/v3/channels?part=snippet&id={self.url}&key={api_key}')  # Получение информации о канале
+        data = response.json()
+        if 'items' in data:
+            channel_title = data['items'][0]['snippet']['title']  # Извлечение названия канала из данных
+            channel_url = f"https://www.youtube.com/channel/{self.url}"
+            return f"{channel_title} ({channel_url})"
+        return self.url
 
-    @staticmethod
-    def get_service():
-        """Возвращает объект для работы с YouTube API"""
-        api_key = os.getenv('YT_API_KEY')
-        return build("youtube", "v3", developerKey=api_key)
+    def __add__(self, other):
+        if isinstance(other, Channel):
+            return self.subscribers + other.subscribers  # Сложение количества подписчиков двух каналов
+        else:
+            raise TypeError("Unsupported operand type(s) for +: 'Channel' and '{}'".format(type(other).__name__))
 
-    def to_json(self, file_path: str) -> None:
-        """Сохраняет информацию о канале в файл JSON"""
-        data = {
-            "channel_id": self.channel_id,
-            "title": self.title,
-            "description": self.description,
-            "url": self.url,
-            "subscriber_count": self.subscriber_count,
-            "video_count": self.video_count,
-            "view_count": self.view_count
-        }
-        with open(file_path, "w") as file:
-            json.dump(data, file, indent=4)
+    def __sub__(self, other):
+        if isinstance(other, Channel):
+            return self.subscribers - other.subscribers  # Вычитание количества подписчиков двух каналов
+        else:
+            raise TypeError("Unsupported operand type(s) for -: 'Channel' and '{}'".format(type(other).__name__))
 
-    def print_info(self) -> None:
-        """Выводит информацию о канале на консоль"""
-        print("Название:", self.title)
-        print("Описание:", self.description)
-        print("Ссылка:", self.url)
-        print("Количество подписчиков:", self.subscriber_count)
-        print("Количество видео:", self.video_count)
-        print("Количество просмотров:", self.view_count)
+    def __gt__(self, other):
+        if isinstance(other, Channel):
+            return self.subscribers > other.subscribers  # Проверка, имеет ли текущий канал больше подписчиков, чем другой канал
+        else:
+            raise TypeError("Unsupported operand type(s) for >: 'Channel' and '{}'".format(type(other).__name__))
 
-# Создание экземпляра класса Channel и обновление информации о канале
-channel = Channel(channel_id)
-channel.update_channel_info()
+    def __ge__(self, other):
+        if isinstance(other, Channel):
+            return self.subscribers >= other.subscribers  # Проверка, имеет ли текущий канал больше или равное количество подписчиков, чем другой канал
+        else:
+            raise TypeError("Unsupported operand type(s) for >=: 'Channel' and '{}'".format(type(other).__name__))
 
-# Вывод информации о канале
-channel.print_info()
+    def __lt__(self, other):
+        if isinstance(other, Channel):
+            return self.subscribers < other.subscribers  # Проверка, имеет ли текущий канал меньше подписчиков, чем другой канал
+        else:
+            raise TypeError("Unsupported operand type(s) for <: 'Channel' and '{}'".format(type(other).__name__))
 
-# Сохранение информации о канале в файл JSON
-channel.to_json("channel_info.json")
+    def __le__(self, other):
+        if isinstance(other, Channel):
+            return self.subscribers <= other.subscribers  # Проверка, имеет ли текущий канал меньшее или равное количество подписчиков, чем другой канал
+        else:
+            raise TypeError("Unsupported operand type(s) for <=: 'Channel' and '{}'".format(type(other).__name__))
+
+    def __eq__(self, other):
+        if isinstance(other, Channel):
+            return self.subscribers == other.subscribers  # Проверка, имеет ли текущий канал равное количество подписчиков, как и другой канал
+        else:
+            raise TypeError("Unsupported operand type(s) for ==: 'Channel' and '{}'".format(type(other).__name__))
+
+
+
 

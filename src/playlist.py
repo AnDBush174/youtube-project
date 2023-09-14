@@ -18,9 +18,10 @@ class PlayList:
             if self.api_key is None:
                 raise EnvironmentError("API ключ YouTube не найден в переменных окружения.")
 
+        self.youtube = build('youtube', 'v3', developerKey=self.api_key)
+
     def get_playlist_info(self):
-        youtube = build('youtube', 'v3', developerKey=self.api_key)
-        playlist_data = youtube.playlists().list(part='snippet', id=self.playlist_id).execute()
+        playlist_data = self.youtube.playlists().list(part='snippet', id=self.playlist_id).execute()
         pprint.pprint(playlist_data)
         print(playlist_data)
 
@@ -39,13 +40,12 @@ class PlayList:
 
     @property
     def total_duration(self):
-        youtube = build('youtube', 'v3', developerKey=self.api_key)
         playlist_items = []
         next_page_token = None
 
         while True:
-            pl_request = youtube.playlistItems().list(part='contentDetails', playlistId=self.playlist_id,
-                                                      maxResults=50, pageToken=next_page_token)
+            pl_request = self.youtube.playlistItems().list(part='contentDetails', playlistId=self.playlist_id,
+                                                           maxResults=50, pageToken=next_page_token)
             pl_response = pl_request.execute()
 
             playlist_items += pl_response['items']
@@ -72,13 +72,12 @@ class PlayList:
         return total_duration
 
     def show_best_video(self):
-        youtube = build('youtube', 'v3', developerKey=self.api_key)
         playlist_items = []
         next_page_token = None
 
         while True:
-            pl_request = youtube.playlistItems().list(part='snippet', playlistId=self.playlist_id,
-                                                      maxResults=50, pageToken=next_page_token)
+            pl_request = self.youtube.playlistItems().list(part='snippet', playlistId=self.playlist_id,
+                                                           maxResults=50, pageToken=next_page_token)
             pl_response = pl_request.execute()
 
             playlist_items += pl_response['items']
@@ -96,7 +95,7 @@ class PlayList:
         video_info = []
 
         for video in videos:
-            video_request = youtube.videos().list(part='statistics', id=video)
+            video_request = self.youtube.videos().list(part='statistics', id=video)
             video_response = video_request.execute()
             video_info.append(video_response['items'][0])
         video_info.sort(key=lambda x: int(x['statistics']['likeCount']), reverse=True)
